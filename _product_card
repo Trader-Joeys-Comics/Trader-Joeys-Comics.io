@@ -1,0 +1,132 @@
+import React from "react";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "@/utils";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ShoppingCart, Star, Package } from "lucide-react";
+import { toast } from "sonner";
+
+export default function ProductCard({ product }) {
+  const addToCart = (e) => {
+    e.preventDefault();
+    
+    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    const existingItem = cart.find(item => item.id === product.id);
+
+    if (existingItem) {
+      existingItem.quantity += 1;
+    } else {
+      cart.push({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image_url: product.image_url,
+        quantity: 1,
+      });
+    }
+
+    localStorage.setItem('cart', JSON.stringify(cart));
+    window.dispatchEvent(new Event('cartUpdated'));
+
+    toast.success(`${product.name} added to cart!`, {
+      icon: '🎉',
+      className: 'comic-text font-bold',
+    });
+  };
+
+  const categoryColors = {
+    comics: "bg-red-500",
+    collectibles: "bg-blue-500",
+    action_figures: "bg-purple-500",
+    graphic_novels: "bg-green-500",
+    vintage: "bg-yellow-500",
+    merchandise: "bg-pink-500",
+  };
+
+  const conditionBadges = {
+    new: { label: "NEW", color: "bg-green-500" },
+    like_new: { label: "LIKE NEW", color: "bg-blue-500" },
+    very_good: { label: "VERY GOOD", color: "bg-yellow-500" },
+    good: { label: "GOOD", color: "bg-orange-500" },
+    acceptable: { label: "ACCEPTABLE", color: "bg-gray-500" },
+  };
+
+  return (
+    <Link to={`${createPageUrl("ProductDetail")}?id=${product.id}`}>
+      <div className="comic-border bg-white overflow-hidden hover:scale-105 transition-transform pow-effect group">
+        <div className="relative">
+          {product.image_url ? (
+            <img
+              src={product.image_url}
+              alt={product.name}
+              className="w-full h-64 object-cover"
+            />
+          ) : (
+            <div className="w-full h-64 bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center">
+              <Package className="w-20 h-20 text-white" />
+            </div>
+          )}
+          
+          {product.featured && (
+            <div className="absolute top-2 right-2 bg-yellow-400 comic-border px-3 py-1 rotate-[5deg]">
+              <Star className="w-4 h-4 fill-black inline" />
+              <span className="comic-text text-xs font-bold ml-1">FEATURED</span>
+            </div>
+          )}
+
+          {product.stock <= 0 && (
+            <div className="absolute inset-0 bg-black bg-opacity-70 flex items-center justify-center">
+              <div className="comic-border bg-red-600 px-4 py-2 rotate-[-5deg]">
+                <p className="comic-title text-xl text-white">SOLD OUT!</p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="p-4">
+          <div className="flex gap-2 mb-2 flex-wrap">
+            <Badge className={`${categoryColors[product.category]} text-white border-2 border-black comic-text font-bold`}>
+              {product.category?.replace(/_/g, ' ').toUpperCase()}
+            </Badge>
+            {product.condition && (
+              <Badge className={`${conditionBadges[product.condition]?.color} text-white border-2 border-black comic-text font-bold`}>
+                {conditionBadges[product.condition]?.label}
+              </Badge>
+            )}
+          </div>
+
+          <h3 className="comic-text text-lg font-bold text-black mb-2 line-clamp-2 group-hover:text-red-600">
+            {product.name}
+          </h3>
+
+          {product.publisher && (
+            <p className="comic-text text-sm text-gray-600 mb-2">
+              {product.publisher} {product.year && `• ${product.year}`}
+            </p>
+          )}
+
+          <div className="flex items-center justify-between mt-4">
+            <div className="comic-title text-2xl text-red-600">
+              ${product.price?.toFixed(2)}
+            </div>
+            <Button
+              onClick={addToCart}
+              disabled={product.stock <= 0}
+              className="comic-text font-bold bg-yellow-400 text-black hover:bg-yellow-500 border-2 border-black"
+              size="sm"
+            >
+              <ShoppingCart className="w-4 h-4 mr-1" />
+              ADD
+            </Button>
+          </div>
+
+          {product.stock > 0 && product.stock <= 5 && (
+            <p className="comic-text text-xs text-red-600 font-bold mt-2">
+              Only {product.stock} left in stock!
+            </p>
+          )}
+        </div>
+      </div>
+    </Link>
+  );
+}

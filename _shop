@@ -1,0 +1,131 @@
+import React, { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { base44 } from "@/api/base44Client";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Search, Filter, X } from "lucide-react";
+import ProductCard from "../components/shop/ProductCard";
+import { Skeleton } from "@/components/ui/skeleton";
+
+export default function Shop() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [sortBy, setSortBy] = useState("-created_date");
+
+  const { data: products, isLoading } = useQuery({
+    queryKey: ['products'],
+    queryFn: () => base44.entities.Product.list(sortBy),
+    initialData: [],
+  });
+
+  // Get category from URL on mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const category = urlParams.get('category');
+    if (category) {
+      setSelectedCategory(category);
+    }
+  }, []);
+
+  const filteredProducts = products.filter(product => {
+    const matchesSearch = product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         product.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === "all" || product.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  const categories = [
+    { value: "all", label: "All Categories" },
+    { value: "comics", label: "Comics" },
+    { value: "collectibles", label: "Collectibles" },
+    { value: "action_figures", label: "Action Figures" },
+    { value: "graphic_novels", label: "Graphic Novels" },
+    { value: "vintage", label: "Vintage" },
+    { value: "merchandise", label: "Merchandise" },
+  ];
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      {/* Header */}
+      <div className="text-center mb-8">
+        <div className="inline-block comic-border bg-gradient-to-r from-red-600 to-yellow-500 px-8 py-3 rotate-[-1deg] mb-4">
+          <h1 className="comic-title text-4xl md:text-5xl text-white">THE SUPER SHOP</h1>
+        </div>
+        <p className="comic-text text-lg font-bold">Discover your next favorite comic or collectible!</p>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-white comic-border p-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Input
+              placeholder="Search comics & collectibles..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 comic-text font-bold border-2 border-black"
+            />
+          </div>
+
+          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <SelectTrigger className="comic-text font-bold border-2 border-black">
+              <Filter className="w-4 h-4 mr-2" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((cat) => (
+                <SelectItem key={cat.value} value={cat.value} className="comic-text font-bold">
+                  {cat.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="comic-text font-bold border-2 border-black">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="-created_date" className="comic-text">Newest First</SelectItem>
+              <SelectItem value="price" className="comic-text">Price: Low to High</SelectItem>
+              <SelectItem value="-price" className="comic-text">Price: High to Low</SelectItem>
+              <SelectItem value="name" className="comic-text">Name: A to Z</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {(searchTerm || selectedCategory !== "all") && (
+          <div className="flex gap-2 mt-4">
+            {searchTerm && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSearchTerm("")}
+                className="comic-text font-bold"
+              >
+                Search: "{searchTerm}" <X className="w-4 h-4 ml-1" />
+              </Button>
+            )}
+            {selectedCategory !== "all" && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSelectedCategory("all")}
+                className="comic-text font-bold"
+              >
+                {categories.find(c => c.value === selectedCategory)?.label} <X className="w-4 h-4 ml-1" />
+              </Button>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Products Grid */}
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+            <div key={i} className="comic-border bg-white p-4">
+              <Skeleton className="w-full h-64 mb-4" />
+              <Skeleton className="h-6 w-3/4 mb-2" />
+              <Skeleton className="h-4 w-1/2" />

@@ -1,0 +1,131 @@
+import React from "react";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "@/utils";
+import { useQuery } from "@tanstack/react-query";
+import { base44 } from "@/api/base44Client";
+import { Button } from "@/components/ui/button";
+import { ArrowRight, Sparkles, Star, Zap } from "lucide-react";
+import ProductCard from "../components/shop/ProductCard";
+import { Skeleton } from "@/components/ui/skeleton";
+
+export default function Home() {
+  const { data: featuredProducts, isLoading } = useQuery({
+    queryKey: ['featured-products'],
+    queryFn: () => base44.entities.Product.filter({ featured: true }, '-created_date', 6),
+    initialData: [],
+  });
+
+  return (
+    <div className="bg-[#FFF4E6]">
+      {/* Hero Section */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-orange-500 via-red-600 to-yellow-600 py-20">
+        <div className="absolute inset-0 halftone opacity-30"></div>
+        <div className="max-w-7xl mx-auto px-4 relative z-10">
+          <div className="text-center">
+            <div className="inline-block mb-6 animate-bounce">
+              <div className="comic-border bg-yellow-400 px-6 py-3 rotate-[-3deg]">
+                <p className="comic-title text-2xl text-black">POW! NEW ARRIVALS!</p>
+              </div>
+            </div>
+            <h1 className="comic-title text-5xl md:text-7xl text-white mb-6 drop-shadow-lg">
+              YOUR COMIC BOOK
+              <br />
+              <span className="text-yellow-300">ADVENTURE STARTS HERE!</span>
+            </h1>
+            <p className="comic-text text-xl text-white mb-8 max-w-2xl mx-auto font-bold">
+              Discover rare comics, vintage collectibles, and exclusive merchandise that'll make any fan's heart race!
+            </p>
+            <Link to={createPageUrl("Shop")}>
+              <Button className="comic-text text-xl font-bold bg-yellow-400 text-black hover:bg-yellow-500 px-8 py-6 comic-border pow-effect">
+                <Zap className="w-6 h-6 mr-2 fill-black" />
+                SHOP NOW
+                <ArrowRight className="w-6 h-6 ml-2" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+
+        {/* Comic burst decorations */}
+        <div className="absolute top-10 left-10 comic-title text-6xl text-yellow-300 opacity-50 rotate-[-15deg]">
+          BOOM!
+        </div>
+        <div className="absolute bottom-10 right-10 comic-title text-6xl text-yellow-300 opacity-50 rotate-[15deg]">
+          ZAP!
+        </div>
+      </section>
+
+      {/* Categories Section */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <div className="inline-block comic-border bg-red-600 px-6 py-2 rotate-[2deg] mb-4">
+              <h2 className="comic-title text-3xl text-white">EXPLORE OUR UNIVERSE</h2>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+            {[
+              { name: 'Comics', emoji: '📚', color: 'from-red-500 to-orange-600', category: 'comics' },
+              { name: 'Collectibles', emoji: '🎭', color: 'from-purple-500 to-pink-600', category: 'collectibles' },
+              { name: 'Action Figures', emoji: '🦸', color: 'from-orange-500 to-red-600', category: 'action_figures' },
+              { name: 'Graphic Novels', emoji: '📖', color: 'from-green-500 to-teal-600', category: 'graphic_novels' },
+              { name: 'Vintage', emoji: '⭐', color: 'from-yellow-500 to-orange-600', category: 'vintage' },
+              { name: 'Merchandise', emoji: '🎨', color: 'from-pink-500 to-red-600', category: 'merchandise' },
+            ].map((cat) => (
+              <Link 
+                key={cat.category}
+                to={`${createPageUrl("Shop")}?category=${cat.category}`}
+                className="group"
+              >
+                <div className={`comic-border bg-gradient-to-br ${cat.color} p-6 md:p-8 text-center hover:scale-105 transition-transform pow-effect`}>
+                  <div className="text-4xl md:text-5xl mb-3">{cat.emoji}</div>
+                  <h3 className="comic-title text-xl md:text-2xl text-white">{cat.name}</h3>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Products */}
+      <section className="py-16 bg-[#FFF4E6]">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <div className="inline-block comic-border bg-yellow-400 px-6 py-2 rotate-[-2deg] mb-4">
+              <h2 className="comic-title text-3xl text-black flex items-center gap-2 justify-center">
+                <Star className="w-8 h-8 fill-black" />
+                FEATURED TREASURES
+                <Star className="w-8 h-8 fill-black" />
+              </h2>
+            </div>
+            <p className="comic-text text-lg font-bold">Check out our hand-picked selection of awesome finds!</p>
+          </div>
+
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="comic-border bg-white p-4">
+                  <Skeleton className="w-full h-64 mb-4" />
+                  <Skeleton className="h-6 w-3/4 mb-2" />
+                  <Skeleton className="h-4 w-1/2" />
+                </div>
+              ))}
+            </div>
+          ) : featuredProducts.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {featuredProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <div className="inline-block speech-bubble bg-white px-8 py-6 mb-4">
+                <p className="comic-text text-xl font-bold text-black">
+                  No featured products yet! Check back soon for amazing deals!
+                </p>
+              </div>
+            </div>
+          )}
+
+          <div className="text-center mt-12">
+            <Link to={createPageUrl("Shop")}>

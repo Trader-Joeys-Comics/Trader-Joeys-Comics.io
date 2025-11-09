@@ -1,0 +1,69 @@
+{
+  "name": "Product",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Product name"
+    },
+    "description": {
+      "type": "string",
+      "description": "Product description"
+    },
+    "price": {
+      "type": "number",
+      "description": "Product price"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "comics",
+        "collectibles",
+        "action_figures",
+        "graphic_novels",
+        "vintage",
+        "merchandise"
+      ],
+      "description": "Product category"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Product image URL"
+    },
+    "stock": {
+      "type": "number",
+      "default": 0,
+      "description": "Available stock"
+    },
+    "condition": {
+      "type": "string",
+      "enum": [
+        "new",
+        "like_new",
+        "very_good",
+        "good",
+        "acceptable"
+      ],
+      "default": "new",
+      "description": "Product condition"
+    },
+    "publisher": {
+      "type": "string",
+      "description": "Publisher or manufacturer"
+    },
+    "year": {
+      "type": "number",
+      "description": "Year of publication/release"
+    },
+    "featured": {
+      "type": "boolean",
+      "default": false,
+      "description": "Featured product"
+    }
+  },
+  "required": [
+    "name",
+    "price",
+    "category"
+  ]
+}
